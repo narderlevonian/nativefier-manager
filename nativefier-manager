@@ -217,23 +217,54 @@ display_info_global() {
 }
 
 # Main script logic
+# Main script logic
 case "$1" in
   install)
+    # Check if the second argument (app-name) is missing or empty
+    if [ -z "$2" ]; then
+      echo "Error: Missing or empty 'app-name' argument for 'install'."
+      print_help
+      exit 1
+    fi
     install_app "$@"
     ;;
   list)
     list_apps
     ;;
   remove)
+    # Check if the second argument (app-name) is missing or empty
+    if [ -z "$2" ]; then
+      echo "Error: Missing or empty 'app-name' argument for 'remove'."
+      print_help
+      exit 1
+    fi
     remove_app "$@"
     ;;
   update)
+    # Check if the second argument (app-name) is missing or empty
+    if [ -z "$2" ]; then
+      echo "Error: Missing or empty 'app-name' argument for 'update'."
+      print_help
+      exit 1
+    fi
     update_app "$@"
     ;;
   info)
+    # Check if the second argument (app-name) is missing or empty
+    if [ -z "$2" ]; then
+      echo "Error: Missing or empty 'app-name' argument for 'info'."
+      print_help
+      exit 1
+    fi
     display_info "$@"
     ;;
   info-installed)
+    # Check if the second argument (app-name) is missing or empty
+    if [ -z "$2" ]; then
+      echo "Error: Missing or empty 'app-name' argument for 'info-installed'."
+      print_help
+      exit 1
+    fi
     display_info_global "$2"
     ;;
   *)
