@@ -1,0 +1,247 @@
+#!/bin/bash
+
+# Nativefier Manager
+
+# Author: [Nar der Levonian](https://github.com/narderlevonian)
+
+# Description:
+# This is a Bash script to manage nativefier applications.
+# It allows you to install, list, remove, update, and get information about nativefier applications.
+# Nativefier is a command-line tool that allows you to create desktop applications for any website or web application using Electron.
+
+# Constants
+INSTALL_DIR="/opt/nativefier"
+BIN_DIR="/usr/local/bin"
+APP_DATA_DIR="/usr/share/applications"
+
+# Help function
+print_help() {
+  echo "Usage:"
+  echo "  $0 install app-name        : Install the specified application."
+  echo "  $0 list                    : View the list of installed applications."
+  echo "  $0 remove app-name         : Delete the specified application."
+  echo "  $0 update app-name         : Update the specified application."
+  echo "  $0 info app-name           : Get information about the specified application in the current folder."
+  echo "  $0 info-installed app-name : Get information about the specified application in the global folder."
+}
+
+# Check if the script is run with sudo privileges
+if [[ $(id -u) -ne 0 ]]; then
+  echo "Error: This script requires sudo privileges. Please run it with sudo."
+  exit 1
+fi
+
+# Function to create directories if they do not exist
+create_dirs() {
+  mkdir -p "$INSTALL_DIR"
+}
+
+# Function to remove the application
+remove_app() {
+  local APP_NAME="$2"
+  local DEST_DIR="$INSTALL_DIR/$APP_NAME"
+  local BIN_LINK="$BIN_DIR/$APP_NAME"
+  local DESKTOP_FILE="$APP_DATA_DIR/$APP_NAME.desktop"
+
+  # Check if the application is installed
+  if [ ! -d "$DEST_DIR" ]; then
+    echo "Application '$APP_NAME' is not installed."
+    exit 1
+  fi
+
+  # Remove the binary link
+  rm -f "$BIN_LINK"
+  echo "Binary link removed: $BIN_LINK"
+
+  # Remove the .desktop file
+  rm -f "$DESKTOP_FILE"
+  echo "Desktop entry removed: $DESKTOP_FILE"
+
+  # Remove the application files
+  rm -rf "$DEST_DIR"
+  echo "Application '$APP_NAME' removed."
+}
+
+# Function to create a symbolic link
+create_symlink() {
+  local APP_NAME="$1"
+  local SRC_DIR="$2"
+  local DEST_DIR="$INSTALL_DIR/$APP_NAME"
+  local BIN_LINK="$BIN_DIR/$APP_NAME"
+
+  # Create the destination directory if it does not exist
+  create_dirs
+
+  # Copy the application files
+  cp -r "$SRC_DIR" "$DEST_DIR"
+  echo "Application installed successfully to $DEST_DIR."
+
+  # Create a symbolic link to the binary
+  ln -s "$DEST_DIR/$APP_NAME" "$BIN_LINK"
+  echo "Symbolic link created: $BIN_LINK"
+}
+
+# Function to create the .desktop file
+create_desktop_entry() {
+  local APP_NAME="$1"
+  local ICON_PATH="$INSTALL_DIR/$APP_NAME/resources/app/icon.png"
+  local DESKTOP_FILE="$APP_DATA_DIR/$APP_NAME.desktop"
+
+  # Create the .desktop file
+  cat > "$DESKTOP_FILE" <<EOF
+[Desktop Entry]
+Name=$APP_NAME
+Exec=$BIN_DIR/$APP_NAME
+Icon=$ICON_PATH
+Terminal=false
+Type=Application
+Categories=Utility;
+EOF
+  echo "Desktop entry created: $DESKTOP_FILE"
+}
+
+# Function to install the application
+install_app() {
+  local APP_NAME="$2"
+  local SRC_DIR="$(pwd)"
+  local PACKAGE_JSON="$SRC_DIR/resources/app/package.json"
+
+  # Check if the application is already installed
+  if [ -d "$INSTALL_DIR/$APP_NAME" ]; then
+    echo "Error: Application is already installed. Please use 'update' argument to update the application."
+    exit 1
+  fi
+  
+  # Check if the specified application name exists as a file in the current folder
+  if [ ! -e "$SRC_DIR/$APP_NAME" ]; then
+    echo "Error: Application '$APP_NAME' not found in the current folder. Please make sure the application exists in the current directory."
+    exit 1
+  fi
+
+  # Check if the package.json file exists in the current folder
+  if [ ! -f "$PACKAGE_JSON" ]; then
+    echo "Error: package.json not found in the current folder. Please make sure the application is installed and the package.json exists."
+    exit 1
+  fi
+  
+  # Fix the name in package.json
+  sed -i "s/\"name\": \".*\"/\"name\": \"$APP_NAME\"/" "$PACKAGE_JSON"
+  echo "Fixed name in package.json: $APP_NAME"
+
+  # Install the application
+  create_symlink "$APP_NAME" "$SRC_DIR"
+  create_desktop_entry "$APP_NAME"
+}
+
+# Function to list installed applications
+list_apps() {
+  local installed_apps_count=$(ls -1 "$INSTALL_DIR" | wc -l)
+  if [ "$installed_apps_count" -eq 0 ]; then
+    echo "No applications are currently installed."
+  else
+    echo "Number of installed applications: $installed_apps_count"
+    echo "Installed applications:"
+    ls -1 "$INSTALL_DIR" | sed 's/^/  /'
+  fi
+}
+
+# Function to update the application
+update_app() {
+  local APP_NAME="$2"
+  local SRC_DIR="$(pwd)"
+
+  # Check if the application is installed
+  if [ ! -d "$INSTALL_DIR/$APP_NAME" ]; then
+    echo "Error: Application '$APP_NAME' is not installed. Please install it first."
+    exit 1
+  fi
+  
+  # Check if the specified application name exists as a file in the current folder
+  if [ ! -e "$SRC_DIR/$APP_NAME" ]; then
+    echo "Error: Application '$APP_NAME' not found in the current folder. Please make sure the application exists in the current directory."
+    exit 1
+  fi
+
+  # Remove the existing application
+  remove_app remove "$APP_NAME"
+
+  # Install the updated application
+  install_app install "$APP_NAME"
+}
+
+# Function to display information about the application
+display_info() {
+  local APP_NAME="$2"
+  local SRC_DIR="$(pwd)"
+  local INFO_FILE="$SRC_DIR/resources/app/nativefier.json"
+
+  # Check if the specified application name exists as a file in the current folder
+  if [ ! -e "$SRC_DIR/$APP_NAME" ]; then
+    echo "Error: Application '$APP_NAME' not found in the current folder. Please make sure the application exists in the current directory."
+    exit 1
+  fi
+
+  # Check if the information file exists
+  if [ ! -f "$INFO_FILE" ]; then
+    echo "Error: Information file for application '$APP_NAME' not found. Make sure the application is installed."
+    exit 1
+  fi
+
+  # Display the information from the nativefier.json file in a table format
+  echo "Information for application '$APP_NAME':"
+  while IFS=':' read -r key value; do
+    key=$(echo "$key" | sed 's/"//g')
+    value=$(echo "$value" | sed 's/"//g')
+    printf "%-30s %s\n" "$key" "$value"
+  done < <(grep -oE '"[^"]+"*: *("[^"]+"|[^",]+)'  "$INFO_FILE")
+}
+
+# Function to display information about the application in the global folder
+display_info_global() {
+  local APP_NAME="$1"
+  local INFO_FILE="$INSTALL_DIR/$APP_NAME/resources/app/nativefier.json"
+
+  # Check if the information file exists
+  if [ ! -f "$INFO_FILE" ]; then
+    echo "Error: Information file for application '$APP_NAME' not found. Make sure the application is installed."
+    exit 1
+  fi
+
+  # Display the information from the nativefier.json file in a table format
+  echo "Information for application '$APP_NAME':"
+  while IFS=':' read -r key value; do
+    key=$(echo "$key" | sed 's/"//g')
+    value=$(echo "$value" | sed 's/"//g')
+    printf "%-30s %s\n" "$key" "$value"
+  done < <(grep -oE '"[^"]+"*: *("[^"]+"|[^",]+)'  "$INFO_FILE")
+}
+
+# Main script logic
+case "$1" in
+  install)
+    install_app "$@"
+    ;;
+  list)
+    list_apps
+    ;;
+  remove)
+    remove_app "$@"
+    ;;
+  update)
+    update_app "$@"
+    ;;
+  info)
+    display_info "$@"
+    ;;
+  info-installed)
+    display_info_global "$2"
+    ;;
+  *)
+    echo "Error: Invalid argument."
+    print_help
+    exit 1
+    ;;
+esac
+
+exit 0
+
