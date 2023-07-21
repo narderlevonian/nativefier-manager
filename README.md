@@ -15,14 +15,10 @@ With `nativefier-manager`, you can easily install, list, remove, update, and get
 1.  Clone this repository to your local machine.
 2.  Navigate to the `nativefier-manager` directory.
 
-bashCopy code
-
 `git clone https://github.com/narderlevonian/nativefier-manager.git
 cd nativefier-manager` 
 
 3.  Run the `install.sh` script with sudo privileges to install `nativefier-manager` globally.
-
-bashCopy code
 
 `sudo bash install.sh` 
 
@@ -41,37 +37,25 @@ The `nativefier-manager` script provides several commands to manage your Nativef
 
 #### Installing an Application:
 
-bashCopy code
-
 `sudo nativefier-manager install AppName` 
 
 #### Listing Installed Applications:
-
-bashCopy code
 
 `sudo nativefier-manager list` 
 
 #### Removing an Application:
 
-bashCopy code
-
 `sudo nativefier-manager remove AppName` 
 
 #### Updating an Application:
-
-bashCopy code
 
 `sudo nativefier-manager update AppName` 
 
 #### Getting Information about an Application:
 
-bashCopy code
-
 `nativefier-manager info AppName` 
 
 #### Getting Information about an Installed Application (Global Folder):
-
-bashCopy code
 
 `nativefier-manager info-installed AppName` 
 
