@@ -41,8 +41,6 @@ The `nativefier-manager` script provides several commands to manage your Nativef
 
 #### Listing Installed Applications:
 
-bashCopy code
-
 `sudo nativefier-manager list` 
 
 #### Removing an Application:
