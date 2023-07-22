@@ -25,9 +25,14 @@ print_help() {
   echo "  $0 info-installed app-name : Get information about the specified application in the global folder."
 }
 
+# Function to print messages in red color
+print_error() {
+  echo -e "\e[31mError: $1\e[0m"
+}
+
 # Check if the script is run with sudo privileges
 if [[ $(id -u) -ne 0 ]]; then
-  echo "Error: This script requires sudo privileges. Please run it with sudo."
+  print_error "This script requires sudo privileges. Please run it with sudo."
   exit 1
 fi
 
@@ -108,19 +113,19 @@ install_app() {
 
   # Check if the application is already installed
   if [ -d "$INSTALL_DIR/$APP_NAME" ]; then
-    echo "Error: Application is already installed. Please use 'update' argument to update the application."
+    print_error "Application is already installed. Please use 'update' argument to update the application."
     exit 1
   fi
   
   # Check if the specified application name exists as a file in the current folder
   if [ ! -e "$SRC_DIR/$APP_NAME" ]; then
-    echo "Error: Application '$APP_NAME' not found in the current folder. Please make sure the application exists in the current directory."
+    print_error "Application '$APP_NAME' not found in the current folder. Please make sure the application exists in the current directory."
     exit 1
   fi
 
   # Check if the package.json file exists in the current folder
   if [ ! -f "$PACKAGE_JSON" ]; then
-    echo "Error: package.json not found in the current folder. Please make sure the application is installed and the package.json exists."
+    print_error "package.json not found in the current folder. Please make sure the application is installed and the package.json exists."
     exit 1
   fi
   
@@ -152,13 +157,13 @@ update_app() {
 
   # Check if the application is installed
   if [ ! -d "$INSTALL_DIR/$APP_NAME" ]; then
-    echo "Error: Application '$APP_NAME' is not installed. Please install it first."
+    print_error "Application '$APP_NAME' is not installed. Please install it first."
     exit 1
   fi
   
   # Check if the specified application name exists as a file in the current folder
   if [ ! -e "$SRC_DIR/$APP_NAME" ]; then
-    echo "Error: Application '$APP_NAME' not found in the current folder. Please make sure the application exists in the current directory."
+    print_error "Application '$APP_NAME' not found in the current folder. Please make sure the application exists in the current directory."
     exit 1
   fi
 
@@ -177,13 +182,13 @@ display_info() {
 
   # Check if the specified application name exists as a file in the current folder
   if [ ! -e "$SRC_DIR/$APP_NAME" ]; then
-    echo "Error: Application '$APP_NAME' not found in the current folder. Please make sure the application exists in the current directory."
+    print_error "Application '$APP_NAME' not found in the current folder. Please make sure the application exists in the current directory."
     exit 1
   fi
 
   # Check if the information file exists
   if [ ! -f "$INFO_FILE" ]; then
-    echo "Error: Information file for application '$APP_NAME' not found. Make sure the application is installed."
+    print_error "Information file for application '$APP_NAME' not found. Make sure the application is installed."
     exit 1
   fi
 
@@ -203,7 +208,7 @@ display_info_global() {
 
   # Check if the information file exists
   if [ ! -f "$INFO_FILE" ]; then
-    echo "Error: Information file for application '$APP_NAME' not found. Make sure the application is installed."
+    print_error "Information file for application '$APP_NAME' not found. Make sure the application is installed."
     exit 1
   fi
 
@@ -222,7 +227,7 @@ case "$1" in
   install)
     # Check if the second argument (app-name) is missing or empty
     if [ -z "$2" ]; then
-      echo "Error: Missing or empty 'app-name' argument for 'install'."
+      print_error "Missing or empty 'app-name' argument for 'install'."
       print_help
       exit 1
     fi
@@ -234,7 +239,7 @@ case "$1" in
   remove)
     # Check if the second argument (app-name) is missing or empty
     if [ -z "$2" ]; then
-      echo "Error: Missing or empty 'app-name' argument for 'remove'."
+      print_error "Missing or empty 'app-name' argument for 'remove'."
       print_help
       exit 1
     fi
@@ -243,7 +248,7 @@ case "$1" in
   update)
     # Check if the second argument (app-name) is missing or empty
     if [ -z "$2" ]; then
-      echo "Error: Missing or empty 'app-name' argument for 'update'."
+      print_error "Missing or empty 'app-name' argument for 'update'."
       print_help
       exit 1
     fi
@@ -252,7 +257,7 @@ case "$1" in
   info)
     # Check if the second argument (app-name) is missing or empty
     if [ -z "$2" ]; then
-      echo "Error: Missing or empty 'app-name' argument for 'info'."
+      print_error "Missing or empty 'app-name' argument for 'info'."
       print_help
       exit 1
     fi
@@ -261,14 +266,14 @@ case "$1" in
   info-installed)
     # Check if the second argument (app-name) is missing or empty
     if [ -z "$2" ]; then
-      echo "Error: Missing or empty 'app-name' argument for 'info-installed'."
+      print_error "Missing or empty 'app-name' argument for 'info-installed'."
       print_help
       exit 1
     fi
     display_info_global "$2"
     ;;
   *)
-    echo "Error: Invalid argument."
+    print_error "Invalid argument."
     print_help
     exit 1
     ;;
