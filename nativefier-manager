@@ -144,11 +144,14 @@ list_apps() {
   if [ "$installed_apps_count" -eq 0 ]; then
     echo "No applications are currently installed."
   else
-    echo "Number of installed applications: $installed_apps_count"
+    echo -e "Number of installed applications: \e[97m$installed_apps_count\e[0m"
     echo "Installed applications:"
-    ls -1 "$INSTALL_DIR" | sed 's/^/  /'
+    for app_name in $(ls -1 "$INSTALL_DIR"); do
+      echo -e "  \e[92m✔\e[0m $app_name"
+    done
   fi
 }
+
 
 # Function to update the application
 update_app() {
