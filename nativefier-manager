@@ -14,15 +14,56 @@ INSTALL_DIR="/opt/nativefier"
 BIN_DIR="/usr/local/bin"
 APP_DATA_DIR="/usr/share/applications"
 
-# Help function
+# Helper function to print the command with specified formatting
+print_command() {
+  local app_name=$1
+  local action=$2
+  local app_name_option=$3
+
+  # ANSI escape codes
+  local green="\033[32m"
+  local bold_white="\033[1m\033[97m"
+  local no_bold_white="\033[97m"
+  local reset="\033[0m"
+
+  echo -e "  ${green}${app_name}${reset} ${bold_white}${action}${reset}${app_name_option:+ ${no_bold_white}${app_name_option}${reset}}"
+}
+
+# Function to print the help text
 print_help() {
-  echo "Usage:"
-  echo "  $0 install app-name        : Install the specified application."
-  echo "  $0 list                    : View the list of installed applications."
-  echo "  $0 remove app-name         : Delete the specified application."
-  echo "  $0 update app-name         : Update the specified application."
-  echo "  $0 info app-name           : Get information about the specified application in the current folder."
-  echo "  $0 info-installed app-name : Get information about the specified application in the global folder."
+  echo -e "${bold_white}Usage:"
+  echo
+  print_command "$0" "install" "app-name"
+  echo -e "  Install the specified application."
+  echo
+  print_command "$0" "list"
+  echo -e "  View the list of installed applications."
+  echo
+  print_command "$0" "remove" "app-name"
+  echo -e "  Delete the specified application."
+  echo
+  print_command "$0" "update" "app-name"
+  echo -e "  Update the specified application."
+  echo
+  print_command "$0" "info" "app-name"
+  echo -e "  Get information about the specified application in the current folder."
+  echo
+  print_command "$0" "info-installed" "app-name"
+  echo -e "  Get information about the specified application in the global folder."
+  echo
+  print_command "$0" "version"
+  echo -e "  Display information about the program."
+  echo
+}
+
+# Program name and version information
+program_name="\e[32mnativefier-manager\e[0m"
+program_version="v0.0.1"
+
+# Function to display logo and program info
+function print_about() {
+  echo -e "$program_name"
+  echo -e "$program_version"
 }
 
 # Function to print messages in red color
@@ -275,6 +316,9 @@ case "$1" in
     fi
     display_info_global "$2"
     ;;
+    version)
+      print_about
+    ;;    
   *)
     print_error "Invalid argument."
     print_help
