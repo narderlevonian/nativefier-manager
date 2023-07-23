@@ -97,34 +97,47 @@ remove_app() {
 
   # Remove the binary link
   rm -f "$BIN_LINK"
-  echo "Binary link removed: $BIN_LINK"
+  print_success "Binary link removed:" "$BIN_LINK"
 
   # Remove the .desktop file
   rm -f "$DESKTOP_FILE"
-  echo "Desktop entry removed: $DESKTOP_FILE"
+  print_success "Desktop entry removed:" "$DESKTOP_FILE"
 
   # Remove the application files
   rm -rf "$DEST_DIR"
-  echo "Application '$APP_NAME' removed."
+  print_success "Application removed successfully from:" "$DEST_DIR"
 }
 
-# Function to create a symbolic link
-create_symlink() {
+# Function to print success messages with gray text and bright white variable
+print_success() {
+  local MESSAGE="$1"
+  local VAR="$2"
+  echo -e "\e[32m✔\e[90m $MESSAGE\e[0m \e[97;1m$VAR\e[0m"
+}
+
+# Function to copy the application files
+copy_app_files() {
   local APP_NAME="$1"
   local SRC_DIR="$2"
   local DEST_DIR="$INSTALL_DIR/$APP_NAME"
-  local BIN_LINK="$BIN_DIR/$APP_NAME"
 
   # Create the destination directory if it does not exist
   create_dirs
 
   # Copy the application files
   cp -r "$SRC_DIR" "$DEST_DIR"
-  echo "Application installed successfully to $DEST_DIR."
+  print_success "Application installed successfully to" "$DEST_DIR."
+}
+
+# Function to create a symbolic link
+create_symlink() {
+  local APP_NAME="$1"
+  local DEST_DIR="$INSTALL_DIR/$APP_NAME"
+  local BIN_LINK="$BIN_DIR/$APP_NAME"
 
   # Create a symbolic link to the binary
   ln -s "$DEST_DIR/$APP_NAME" "$BIN_LINK"
-  echo "Symbolic link created: $BIN_LINK"
+  print_success "Symbolic link created:" "$BIN_LINK"
 }
 
 # Function to create the .desktop file
@@ -143,7 +156,7 @@ Terminal=false
 Type=Application
 Categories=Utility;
 EOF
-  echo "Desktop entry created: $DESKTOP_FILE"
+  print_success "Desktop entry created:" "$DESKTOP_FILE"
 }
 
 # Function to install the application
@@ -172,10 +185,12 @@ install_app() {
   
   # Fix the name in package.json
   sed -i "s/\"name\": \".*\"/\"name\": \"$APP_NAME\"/" "$PACKAGE_JSON"
-  echo "Fixed name in package.json: $APP_NAME"
-
+  echo -e "\e[90m  Fixed name in \e[97;1mpackage.json\e[0m\e[90m to \e[93;1m$APP_NAME\e[0m"
+  
+  
   # Install the application
-  create_symlink "$APP_NAME" "$SRC_DIR"
+  copy_app_files "$APP_NAME" "$SRC_DIR"
+  create_symlink "$APP_NAME"
   create_desktop_entry "$APP_NAME"
 }
 
