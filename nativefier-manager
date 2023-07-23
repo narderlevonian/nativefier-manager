@@ -135,9 +135,22 @@ create_symlink() {
   local DEST_DIR="$INSTALL_DIR/$APP_NAME"
   local BIN_LINK="$BIN_DIR/$APP_NAME"
 
+  # Check if a symbolic link already exists
+  if [ -L "$BIN_LINK" ]; then
+    print_error "Symbolic link '$BIN_LINK' already exists. Please remove it first to update the application."
+    exit 1
+  fi
+
   # Create a symbolic link to the binary
   ln -s "$DEST_DIR/$APP_NAME" "$BIN_LINK"
-  print_success "Symbolic link created:" "$BIN_LINK"
+
+  # Check if the symbolic link was created successfully
+  if [ $? -eq 0 ]; then
+    print_success "Symbolic link created:" "$BIN_LINK"
+  else
+    print_error "Failed to create symbolic link:"
+    exit 1
+  fi
 }
 
 # Function to create the .desktop file
@@ -145,6 +158,12 @@ create_desktop_entry() {
   local APP_NAME="$1"
   local ICON_PATH="$INSTALL_DIR/$APP_NAME/resources/app/icon.png"
   local DESKTOP_FILE="$APP_DATA_DIR/$APP_NAME.desktop"
+
+  # Check if a desktop entry already exists
+  if [ -e "$DESKTOP_FILE" ]; then
+    print_error "Desktop entry '$DESKTOP_FILE' already exists. Please remove it first to update the application."
+    exit 1
+  fi
 
   # Create the .desktop file
   cat > "$DESKTOP_FILE" <<EOF
@@ -156,7 +175,14 @@ Terminal=false
 Type=Application
 Categories=Utility;
 EOF
-  print_success "Desktop entry created:" "$DESKTOP_FILE"
+
+  # Check if the desktop entry was created successfully
+  if [ $? -eq 0 ]; then
+    print_success "Desktop entry created:" "$DESKTOP_FILE"
+  else
+    print_error "Failed to create desktop entry:"
+    exit 1
+  fi
 }
 
 # Function to install the application
